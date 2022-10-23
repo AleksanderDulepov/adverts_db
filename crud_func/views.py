@@ -2,16 +2,15 @@ import json
 from typing import List, Dict
 
 from django.forms import model_to_dict
-from django.http import JsonResponse, HttpResponse
-from django.shortcuts import render
+from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import ListView, CreateView
 
-from crud_func.models import Category, Advert
-from crud_func.utils import load_universal
 from django.views.generic.detail import DetailView
+
+from advert.models import Advert
+from category.models import Category
 
 
 def index(request):
@@ -65,3 +64,4 @@ class AdvertDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         advert = self.get_object()
         return JsonResponse(model_to_dict(advert))
+

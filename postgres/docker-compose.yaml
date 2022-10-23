@@ -1,21 +1,12 @@
 version: '3.8'
 
 services:
-  app:
-    build:
-      context: .
-    command: python manage.py runserver localhost:8000
-    ports:
-      - 8000:8000
-    restart: always
   db:
     image: postgres:12.4-alpine
     volumes:
-      - ./postgres_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: skypro_l27
-      POSTGRES_PASSWORD: skypro_l27
-      POSTGRES_DB: skypro_l27
+      - ../postgres_data:/var/lib/postgresql/data
+    env_file:
+      - ../.env
     restart: always
     ports:
     - "5432:5432"
