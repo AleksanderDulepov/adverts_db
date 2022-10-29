@@ -18,12 +18,33 @@ class AdvertListView(ListView):
     model = Advert
 
     def get(self, request, *args, **kwargs):
-        super().get(request, *args, **kwargs)
 
-        # для оптимизации запросов advert.author.name, advert.category.id (джойним таблицы author и category)-дл
-        self.object_list = self.object_list.select_related('author').select_related('category').order_by("-price")
+        #блок фильтрации
+        data = request.GET
+        self.queryset=self.get_queryset().select_related('author').select_related('category')
 
-        paginator = Paginator(self.object_list, settings.TOTAL_ON_PAGE)
+        category_list = data.getlist('cat')
+        if category_list:
+            self.queryset = self.queryset.filter(category__in=category_list)
+
+        text = data.get('text')
+        if text:
+            self.queryset = self.queryset.filter(name__icontains=text)
+
+        location = data.get('location')
+        if location:
+            self.queryset = self.queryset.filter(author__location__name__icontains=location)
+
+        price_from = data.get('price_from')
+        if price_from:
+            self.queryset = self.queryset.filter(price__gte=int(price_from))
+
+        price_to = data.get('price_to')
+        if price_to:
+            self.queryset = self.queryset.filter(price__lte=int(price_to))
+
+
+        paginator = Paginator(self.queryset , settings.TOTAL_ON_PAGE)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 

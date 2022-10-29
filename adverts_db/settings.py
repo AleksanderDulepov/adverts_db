@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'crud_func',
     'user',
     'advert',
@@ -144,3 +145,9 @@ AUTH_USER_MODEL = 'user.User'
 TOTAL_ON_PAGE=10
 MEDIA_URL="/media/"	#суффикс в url, по которому будем отдавать медиа клиенту
 MEDIA_ROOT=os.path.join(BASE_DIR, 'media')	#БАЗОВАЯ папка в Проекте, где мы будем хранить все медиаданные
+
+
+REST_FRAMEWORK={
+    "DEFAULT_PAGINATION_CLASS":"rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE":10
+}

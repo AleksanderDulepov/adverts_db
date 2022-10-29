@@ -14,11 +14,15 @@ class Location(models.Model):
             return self.name
 
 
-ROLES = [("admin", "Администратор"), ("moderator", "Модератор"), ("member", "Участник")]
+
 class User(AbstractUser):
-    role = models.CharField(max_length=20, choices=ROLES, default="member",null=True)
-    age = models.IntegerField(null=True)
-    location = models.ForeignKey(Location, on_delete=models.CASCADE,null=True)
+    ROLES = [("admin", "Администратор"), ("moderator", "Модератор"), ("member", "Участник")]
+
+    role = models.CharField(max_length=20, choices=ROLES, default="member")
+    age = models.IntegerField()
+    # location = models.ForeignKey(Location, on_delete=models.CASCADE,null=True)
+    location = models.ManyToManyField(Location, verbose_name="Location list", related_name="rel_skills")
+
 
     class Meta:
         verbose_name = "Пользователь"

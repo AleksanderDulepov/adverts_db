@@ -24,11 +24,8 @@ def load_universal(path: str, model):
         for line in reader:
             instance = model()
             for key, value in values_indexes.items():
-                if key == "location":
-                    location = Location.objects.get(id=line[value]) if Location.objects.filter(
-                        id=line[value]).exists() else None
-                    setattr(instance, f"{key}_id", location.id)
-                elif key == "category":
+
+                if key == "category":
                     category = Category.objects.get(id=line[value]) if Category.objects.filter(
                         id=line[value]).exists() else None
                     setattr(instance, f"{key}_id", category.id)
@@ -36,7 +33,16 @@ def load_universal(path: str, model):
                     author = User.objects.get(id=line[value]) if User.objects.filter(
                         id=line[value]).exists() else None
                     setattr(instance, f"{key}_id", author.id)
-                else:
+                elif key != "location":
                     setattr(instance, key, line[value])
 
             instance.save()
+
+            if key == "location":
+                location = Location.objects.get(id=line[value]) if Location.objects.filter(
+                    id=line[value]).exists() else None
+                instance.location.add(location)
+                # setattr(instance, key, location)
+            instance.save()
+
+

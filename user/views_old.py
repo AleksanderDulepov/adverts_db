@@ -2,14 +2,13 @@ import json
 
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.db.models import Count, Exists, Q
+from django.db.models import Count, Q
 from django.forms import model_to_dict
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 
-from advert.models import Advert
 from user.models import User, Location
 
 
@@ -19,12 +18,14 @@ class UserListView(ListView):
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
 
-        self.object_list = self.object_list.select_related('location').annotate(
+        self.object_list = self.object_list.prefetch_related('location').annotate(
             total_adverts=Count('advert', filter=Q(advert__is_published=True))).order_by("username")
 
         paginator = Paginator(self.object_list, settings.TOTAL_ON_PAGE)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
+
+
 
         user_list = []
         for user in page_obj:
@@ -34,7 +35,8 @@ class UserListView(ListView):
                               "last_name": user.last_name,
                               "role": user.role,
                               "age": user.age,
-                              "location": user.location.name if user.location else None,  # могут быть юзеры без адреса
+                              # "location": list(user.location.all().values_list("name", flat=True)),
+                              "location": list(map(str, user.location.all())),
                               "total_adverts": user.total_adverts
                               })
 
@@ -48,16 +50,18 @@ class UserDetailView(DetailView):
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
-        self.queryset = self.get_queryset().filter(pk=self.object.id).select_related('location').annotate(
+        self.queryset = self.get_queryset().filter(pk=self.object.id).prefetch_related('location').annotate(
             total_adverts=Count('advert', filter=Q(advert__is_published=True)))
 
         user = self.get_object()
 
         user_dict = model_to_dict(user, exclude=['location'])
-        user_dict["location"] = user.location.name if user.location else None  # могут быть юзеры без адреса
+        user_dict["location"] = list(map(str, user.location.all())),
         user_dict["total_adverts"] = user.total_adverts
 
-        return JsonResponse(user_dict, status=200)
+        print(user_dict)
+
+        return JsonResponse(user_dict, safe=False, status=200)
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -66,18 +70,21 @@ class UserCreateView(CreateView):
     fields = ["id", "username", "password"]
 
     def post(self, request, *args, **kwargs):
+
         data_dict = json.loads(request.body)
-        user = User(**{key: value for key, value in data_dict.items() if key not in ("id", "location")})
+
+        user = User.objects.create(**{key: value for key, value in data_dict.items() if key not in ("id", "location")})
 
         # заполнение/создание location
-        if data_dict.get("location"):
-            location_obj, created = Location.objects.get_or_create(name=data_dict.get("location"))
-            user.location = location_obj
+        if data_dict.get('location'):
+            for location in data_dict.get('location'):
+                location_obj, created = Location.objects.get_or_create(name=location)
+                user.location.add(location_obj)
 
         user.save()
 
         user_dict = model_to_dict(user, exclude=['location'])
-        user_dict["location"] = user.location.name if user.location else None  # могут быть юзеры без адреса
+        user_dict["location"] = list(map(str, user.location.all())),
 
         return JsonResponse(user_dict, status=201)
 
@@ -89,21 +96,23 @@ class UserUpdateView(UpdateView):
 
     def patch(self, request, *args, **kwargs):
         super().post(request, *args, **kwargs)
-        self.queryset = self.get_queryset().filter(pk=self.object.id).select_related('location')
+        self.queryset = self.get_queryset().filter(pk=self.object.id).prefetch_related('location')
         data_dict = json.loads(request.body)
 
         self.queryset.update(**{key: value for key, value in data_dict.items() if key not in ("id", "location")})
         user = self.get_object()
 
         # заполнение/создание location
-        if data_dict.get("location"):
-            location_obj, created = Location.objects.get_or_create(name=data_dict.get("location"))
-            user.location = location_obj
+        if data_dict.get('location'):
+            user.location.clear()
+            for location in data_dict.get('location'):
+                location_obj, created = Location.objects.get_or_create(name=location)
+                user.location.add(location_obj)
 
         user.save()
 
         user_dict = model_to_dict(user, exclude=['location'])
-        user_dict["location"] = user.location.name if user.location else None
+        user_dict["location"] = list(map(str, user.location.all())),
 
         return JsonResponse(user_dict, status=204)
 
