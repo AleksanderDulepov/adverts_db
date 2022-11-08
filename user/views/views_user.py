@@ -2,7 +2,7 @@ from django.db.models import Count, Q
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
 
 from user.models import User
-from user.serializers_user import UserListSerializer, UserDetailSerializer, UserCreateSerializer, UserUpdateSerializer, \
+from user.serializers.serializers_user import UserListSerializer, UserDetailSerializer, UserCreateSerializer, UserUpdateSerializer, \
     UserDestroySerializer
 
 

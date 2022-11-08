@@ -48,13 +48,13 @@ class UserCreateSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def is_valid(self, raise_exception=False):
-        self._location = self.initial_data.pop("location")
+        self._location = self.initial_data.pop("location", [])
         return super().is_valid(raise_exception=raise_exception)
 
     def create(self, validated_data):
         user = User.objects.create(**validated_data)
 
-        user.set_password(self.initial_data["password"])  # для хеширования переданного пароля
+        user.set_password(user.password)  # для хеширования переданного пароля
 
         for location in self._location:
             location_object, created = Location.objects.get_or_create(name=location)

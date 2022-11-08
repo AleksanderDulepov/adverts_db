@@ -5,10 +5,12 @@ from django.urls import path, include
 from rest_framework import routers
 
 from adverts_db import settings
-from user.views_location import LocationViewSet
+from selection.views import SelectionViewSet
+from user.views.views_location import LocationViewSet
 
 router=routers.SimpleRouter()
 router.register('location', LocationViewSet)
+router.register('selection', SelectionViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -16,6 +18,7 @@ urlpatterns = [
     path('cat/', include('category.urls')),
     path('adv/', include("advert.urls")),
     path('user/', include("user.urls")),
+    # path('selection/', include("selection.urls")),
 ]
 urlpatterns+=router.urls
 

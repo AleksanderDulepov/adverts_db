@@ -8,18 +8,16 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+        ('advert', '0001_initial'),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Category',
+            name='Selection',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50, unique=True)),
+                ('name', models.CharField(max_length=100)),
+                ('items', models.ManyToManyField(related_name='adverts_list', to='advert.advert', verbose_name='Список обьявлений')),
             ],
-            options={
-                'verbose_name': 'Категория',
-                'verbose_name_plural': 'Категории',
-            },
         ),
     ]
