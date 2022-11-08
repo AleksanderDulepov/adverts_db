@@ -1,7 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
-from advert.models import Advert
 from advert.serializers import AdvertDetailSerializer
 from selection.models import Selection
 from user.models import User

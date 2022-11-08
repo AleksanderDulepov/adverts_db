@@ -7,11 +7,12 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
 from advert.models import Advert
+from advert.permissions import AdvertEditPermission
 from category.models import Category
 from user.models import User
 
@@ -21,9 +22,9 @@ class AdvertListView(ListView):
 
     def get(self, request, *args, **kwargs):
 
-        #блок фильтрации
+        # блок фильтрации
         data = request.GET
-        self.queryset=self.get_queryset().select_related('author').select_related('category')
+        self.queryset = self.get_queryset().select_related('author').select_related('category')
 
         category_list = data.getlist('cat')
         if category_list:
@@ -45,8 +46,7 @@ class AdvertListView(ListView):
         if price_to:
             self.queryset = self.queryset.filter(price__lte=int(price_to))
 
-
-        paginator = Paginator(self.queryset , settings.TOTAL_ON_PAGE)
+        paginator = Paginator(self.queryset, settings.TOTAL_ON_PAGE)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
@@ -65,6 +65,8 @@ class AdvertListView(ListView):
         return JsonResponse(response)
 
 
+# @api_view(["GET"])
+# @permission_classes([IsAuthenticated])
 class AdvertDetailView(DetailView):
     model = Advert
 
@@ -103,6 +105,8 @@ class AdvertCreateView(CreateView):
         return JsonResponse(advert_dict, status=201)
 
 
+# @api_view(["PATCH"])
+# @permission_classes([IsAuthenticated, AdvertEditPermission])
 @method_decorator(csrf_exempt, name="dispatch")
 class AdvertUpdateView(UpdateView):
     model = Advert
@@ -157,11 +161,20 @@ class AdvertUpdateImageView(UpdateView):
                              "image": advert.image.url if advert.image else None}, status=204)
 
 
-@method_decorator(csrf_exempt, name="dispatch")
-class AdvertDeleteView(DeleteView):
-    model = Advert
-    success_url = "/"
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated, AdvertEditPermission])
+def delete(request, pk):
+    if request.method == "DELETE":
+        advert = get_object_or_404(Advert, pk=pk)
+        advert.delete()
+        return JsonResponse({"status":"ok"}, status=204)
 
-    def delete(self, request, *args, **kwargs):
-        super().delete(request, *args, **kwargs)
-        return JsonResponse({"status": "ok"}, status=204)
+
+# @method_decorator(csrf_exempt, name="dispatch")
+# class AdvertDeleteView(DeleteView):
+#     model = Advert
+#     success_url = "/"
+#
+#     def delete(self, request, *args, **kwargs):
+#         super().delete(request, *args, **kwargs)
+#         return JsonResponse({"status": "ok"}, status=204)
