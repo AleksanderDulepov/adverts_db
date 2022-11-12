@@ -10,14 +10,19 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **options):
-        try:
-            # User.objects.all().delete()
-            # Advert.objects.all().delete()
-            # Category.objects.all().delete()
-            load_universal("./user/data/location.csv", Location)
-            load_universal("./user/data/category.csv", Category)
-            load_universal("./user/data/user.csv", User)
-            load_universal("./user/data/ad.csv", Advert)
+        # load_universal("./user/data/location.csv", Location)
+        # load_universal("./user/data/category.csv", Category)
+        # load_universal("./user/data/user.csv", User)
+        load_universal("./user/data/ad.csv", Advert)
 
-        except:
-            raise CommandError('load data fail')
+        # try:
+        #     # User.objects.all().delete()
+        #     # Advert.objects.all().delete()
+        #     # Category.objects.all().delete()
+        #     load_universal("./user/data/location.csv", Location)
+        #     load_universal("./user/data/category.csv", Category)
+        #     load_universal("./user/data/user.csv", User)
+        #     load_universal("./user/data/ad.csv", Advert)
+        #
+        # except:
+        #     raise CommandError('load data fail')

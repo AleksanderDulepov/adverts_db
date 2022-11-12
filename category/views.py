@@ -7,8 +7,10 @@ from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from rest_framework.generics import CreateAPIView, UpdateAPIView
 
 from category.models import Category
+from category.serializers import CategorySerializer
 
 
 class CategoryListView(ListView):
@@ -36,33 +38,20 @@ class CategoryDetailView(DetailView):
         category = self.get_object()
         return JsonResponse(model_to_dict(category), status=200)
 
-
 @method_decorator(csrf_exempt, name="dispatch")
-class CategoryCreateView(CreateView):
+class CategoryCreateView(UpdateView):
     model = Category
     fields = ['name']
 
-    def post(self, request, *args, **kwargs):
-        data_dict = json.loads(request.body)
-        category = Category.objects.create(**{key: value for key, value in data_dict.items() if key not in ("id")})
-
-        category_dict = model_to_dict(category)
-        return JsonResponse(category_dict, status=201)
 
 
-@method_decorator(csrf_exempt, name="dispatch")
-class CategoryUpdateView(UpdateView):
-    model = Category
-    fields = ['name']
+class CategoryCreateView(CreateAPIView):
+    queryset=Category.objects.all()
+    serializer_class=CategorySerializer
 
-    def patch(self, request, *args, **kwargs):
-        super().post(request, *args, **kwargs)
-
-        data_dict = json.loads(request.body)
-        self.object.name = data_dict.get("name")
-        self.object.save()
-        category_dict = model_to_dict(self.object)
-        return JsonResponse(category_dict, status=204)
+class CategoryUpdateView(UpdateAPIView):
+    queryset=Category.objects.all()
+    serializer_class=CategorySerializer
 
 
 @method_decorator(csrf_exempt, name="dispatch")

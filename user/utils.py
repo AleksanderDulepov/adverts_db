@@ -13,7 +13,7 @@ def load_universal(path: str, model):
         first_line = list(reader.__next__())
         values_indexes = {}
         if model==User:
-            values_list = ["first_name","last_name","username","password","role","age","location"]
+            values_list = ["first_name","last_name","username","password","role","age","location","birth_date","email"]
         else:
             values_list = list(model_to_dict(model, exclude=['id']).keys())
         try:

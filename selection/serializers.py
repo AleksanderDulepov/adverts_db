@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
-from advert.serializers import AdvertDetailSerializer
+from advert.serializers import AdvertSerializer
 from selection.models import Selection
 from user.models import User
 
@@ -17,7 +17,7 @@ class SelectionListSerializer(serializers.ModelSerializer):
         fields=["id", "name"]
 
 class SelectionDetailSerializer(serializers.ModelSerializer):
-    items = AdvertDetailSerializer(many=True, read_only=True)
+    items = AdvertSerializer(many=True, read_only=True)
 
     class Meta:
         model=Selection
